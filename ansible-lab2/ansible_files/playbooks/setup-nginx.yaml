@@ -1,0 +1,10 @@
+---
+  - hosts: minions
+    become: true
+    tasks:
+      - name: Uploading application file
+        copy:
+          src: ./nginx.conf
+          dest: /home/vagrant/nginx/
+          mode: 0755
+

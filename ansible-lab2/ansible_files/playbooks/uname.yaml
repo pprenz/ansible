@@ -1,0 +1,7 @@
+# uname.yaml
+
+---
+  - hosts: lab1
+    tasks:
+      - name: Get OS type
+        shell: uname

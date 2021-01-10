@@ -1,0 +1,9 @@
+#host-dev
+
+[local]
+master ansible_connection=local
+
+
+[minions]
+lab1
+lab2

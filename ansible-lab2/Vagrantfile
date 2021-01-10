@@ -1,0 +1,61 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+ENV['VAGRANT_NO_PARALLEL'] = 'yes'
+
+Vagrant.configure(2) do |config|
+
+  config.vm.provision "shell", path: "bootstrap.sh"
+
+  # Master Server
+  config.vm.define "master" do |node|
+  
+    node.vm.box_url = "ubuntu/xenial64"
+    node.vm.box = "ubuntu/xenial64"
+    node.vm.hostname = "main"
+    node.vm.network "private_network", ip: "172.16.16.100"
+    node.ssh.insert_key = false
+    node.vm.provision "file", source: "keys/.ssh/vagrant_rsa", destination: "~/.ssh/id_rsa"
+    node.vm.provision "file", source: "ansible_files/hosts-dev", destination: "~/hosts-dev"
+    node.vm.provision "file", source: "ansible_files", destination: "$HOME/ansible_files"
+    
+  
+    node.vm.provider "virtualbox" do |v|
+      v.name = "main"
+      v.memory = 512 
+      v.cpus = 1
+    end
+  
+    node.vm.provision "shell", path: "bootstrap_master.sh"
+  
+  end
+
+
+  # Worker Nodes
+  NodeCount = 2
+
+  (1..NodeCount).each do |i|
+
+    config.vm.define "lab#{i}" do |node|
+
+      node.vm.box_url = "ubuntu/xenial64"
+      node.vm.box = "ubuntu/xenial64"
+      node.vm.hostname = "lab#{i}"
+      node.vm.network "private_network", ip: "172.16.16.10#{i}"
+      node.ssh.insert_key = false
+      node.ssh.private_key_path = ["keys/.ssh/vagrant_rsa", "~/.vagrant.d/insecure_private_key"]
+      node.vm.provision "file", source: "keys/.ssh/vagrant_rsa.pub", destination: "~/.ssh/authorized_keys"
+
+      node.vm.provider "virtualbox" do |v|
+        v.name = "lab#{i}"
+        v.memory = 512 
+        v.cpus = 1
+      end
+
+      node.vm.provision "shell", path: "bootstrap_worker.sh"
+
+    end
+
+  end
+
+end
